@@ -54,3 +54,13 @@ Desktop.ini
 *.local
 *.cache
 coverage/
+node_modules
+.next
+.env
+.env.local
+.env.development
+.env.production
+dist
+coverage
+*.log
+.vscode/settings.json
