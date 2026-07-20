@@ -1,0 +1,32 @@
+{
+  "components": {
+    "ui": {
+      "description": "Reusable UI components such as buttons, modals, and form elements.",
+      "examples": [
+        "Button",
+        "Modal",
+        "InputField",
+        "Checkbox",
+        "Dropdown"
+      ]
+    },
+    "layout": {
+      "description": "Layout components for structuring pages, such as headers and footers.",
+      "examples": [
+        "Header",
+        "Footer",
+        "Sidebar",
+        "MainLayout"
+      ]
+    },
+    "charts": {
+      "description": "Components for rendering charts using the Recharts library.",
+      "examples": [
+        "LineChart",
+        "BarChart",
+        "PieChart",
+        "AreaChart"
+      ]
+    }
+  }
+}

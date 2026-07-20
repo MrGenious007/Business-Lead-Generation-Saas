@@ -1,0 +1,61 @@
+import { supabase } from '../lib/supabase';
+import { Lead } from '../types/lead';
+
+export const fetchLeads = async (filters: {
+  industry?: string;
+  keywords?: string;
+  location?: string;
+  radius?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+}) => {
+  const { data, error } = await supabase
+    .from<Lead>('leads')
+    .select('*')
+    .match(filters);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const addLead = async (lead: Lead) => {
+  const { data, error } = await supabase
+    .from<Lead>('leads')
+    .insert([lead]);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const updateLead = async (id: string, updates: Partial<Lead>) => {
+  const { data, error } = await supabase
+    .from<Lead>('leads')
+    .update(updates)
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const deleteLead = async (id: string) => {
+  const { data, error } = await supabase
+    .from<Lead>('leads')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};

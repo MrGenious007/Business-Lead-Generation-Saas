@@ -1,0 +1,49 @@
+{
+  "name": "leadpilot-ai",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "start": "next start",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.1",
+    "framer-motion": "latest",
+    "lucide-react": "^0.525.0",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-hook-form": "^7.56.2",
+    "react-hot-toast": "^2.1.0",
+    "react-query": "latest",
+    "recharts": "latest",
+    "shadcn-ui": "latest",
+    "supabase-js": "latest",
+    "tailwindcss": "latest",
+    "tanstack-table": "latest",
+    "typescript": "latest",
+    "zod": "latest",
+    "zustand": "latest",
+    "openai": "latest",
+    "resend": "latest"
+  },
+  "devDependencies": {
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "jest": "latest",
+    "ts-jest": "latest",
+    "@types/jest": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
+}

@@ -1,0 +1,62 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+async function seedDatabase() {
+  // Example seed data for businesses
+  const businesses = [
+    {
+      id: '1',
+      name: 'Health Clinic',
+      category: 'Healthcare',
+      phone: '123-456-7890',
+      website: 'https://healthclinic.example.com',
+      email: 'info@healthclinic.example.com',
+      address: '123 Health St, Wellness City',
+      latitude: 40.7128,
+      longitude: -74.0060,
+      rating: 4.5,
+      reviews: 120,
+      opening_hours: 'Mon-Fri 9am-5pm',
+      social_media_links: JSON.stringify({
+        facebook: 'https://facebook.com/healthclinic',
+        instagram: 'https://instagram.com/healthclinic',
+      }),
+    },
+    {
+      id: '2',
+      name: 'Gourmet Restaurant',
+      category: 'Food & Beverage',
+      phone: '987-654-3210',
+      website: 'https://gourmetrestaurant.example.com',
+      email: 'contact@gourmetrestaurant.example.com',
+      address: '456 Food Ave, Culinary Town',
+      latitude: 34.0522,
+      longitude: -118.2437,
+      rating: 4.8,
+      reviews: 200,
+      opening_hours: 'Mon-Sun 11am-11pm',
+      social_media_links: JSON.stringify({
+        facebook: 'https://facebook.com/gourmetrestaurant',
+        instagram: 'https://instagram.com/gourmetrestaurant',
+      }),
+    },
+  ];
+
+  for (const business of businesses) {
+    const { data, error } = await supabase
+      .from('businesses')
+      .insert([business]);
+
+    if (error) {
+      console.error('Error seeding data:', error);
+    } else {
+      console.log('Inserted business:', data);
+    }
+  }
+}
+
+seedDatabase();
