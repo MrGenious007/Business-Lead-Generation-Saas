@@ -16,7 +16,7 @@
     "jsx": "preserve",
     "jsxImportSource": "react",
     "incremental": true,
-    "baseUrl": ".",
+  //  "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     }
