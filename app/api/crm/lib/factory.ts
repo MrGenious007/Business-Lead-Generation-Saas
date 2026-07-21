@@ -2,7 +2,7 @@ import { z, type ZodSchema, type ZodError } from 'zod';
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getActiveOrganizationId } from '@/services/crm/utils';
-import { requireAuth, requirePermission } from './auth';
+import { CrmApiError, requireAuth, requirePermission } from './auth';
 import { parseListOptions } from './query';
 import { badRequest, forbidden, handleApiError, noContent, notFound, ok } from './response';
 import type { AppSupabaseClient } from '@/services/user';
