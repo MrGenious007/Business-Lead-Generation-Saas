@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { Footer } from '../components/layout/Footer';
 import { Navbar } from '../components/layout/Navbar';
-import '../globals.css';
+import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 

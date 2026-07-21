@@ -8,7 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "next dev",
+    "dev:workspaces": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
@@ -37,10 +38,12 @@
     "zustand": "^5.0.7"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
+    "autoprefixer": "^10.5.4",
     "eslint": "^9.34.0",
     "eslint-config-next": "^15.4.5",
     "jest": "^30.0.5",
