@@ -1,5 +1,19 @@
 import { createClient } from '@/lib/supabase/client';
-import type { ActivityItem, Company, Contact, Deal, Lead, NoteItem, Pipeline, TaskItem } from '@/types/crm';
+import type {
+  ActivityItem,
+  Company,
+  CompanyCreateInput,
+  Contact,
+  Deal,
+  DealCreateInput,
+  Lead,
+  LeadCreateInput,
+  NoteCreateInput,
+  NoteItem,
+  Pipeline,
+  TaskCreateInput,
+  TaskItem,
+} from '@/types/crm';
 
 const supabase = createClient();
 
@@ -8,7 +22,7 @@ export async function getLeads() {
   return { data: data as Lead[] | null, error: error?.message };
 }
 
-export async function createLead(payload: Lead) {
+export async function createLead(payload: LeadCreateInput) {
   const { data, error } = await supabase.from('crm_leads').insert(payload).select().single();
   return { data: data as Lead | null, error: error?.message };
 }
@@ -23,7 +37,7 @@ export async function getCompanies() {
   return { data: data as Company[] | null, error: error?.message };
 }
 
-export async function createCompany(payload: Company) {
+export async function createCompany(payload: CompanyCreateInput) {
   const { data, error } = await supabase.from('crm_companies').insert(payload).select().single();
   return { data: data as Company | null, error: error?.message };
 }
@@ -38,7 +52,7 @@ export async function getDeals() {
   return { data: data as Deal[] | null, error: error?.message };
 }
 
-export async function createDeal(payload: Deal) {
+export async function createDeal(payload: DealCreateInput) {
   const { data, error } = await supabase.from('crm_deals').insert(payload).select().single();
   return { data: data as Deal | null, error: error?.message };
 }
@@ -48,7 +62,7 @@ export async function getPipelines() {
   return { data: data as Pipeline[] | null, error: error?.message };
 }
 
-export async function createTask(payload: TaskItem) {
+export async function createTask(payload: TaskCreateInput) {
   const { data, error } = await supabase.from('crm_tasks').insert(payload).select().single();
   return { data: data as TaskItem | null, error: error?.message };
 }
@@ -58,7 +72,7 @@ export async function getTasks() {
   return { data: data as TaskItem[] | null, error: error?.message };
 }
 
-export async function createNote(payload: NoteItem) {
+export async function createNote(payload: NoteCreateInput) {
   const { data, error } = await supabase.from('crm_notes').insert(payload).select().single();
   return { data: data as NoteItem | null, error: error?.message };
 }

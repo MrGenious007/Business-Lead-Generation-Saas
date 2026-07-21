@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { DashboardShell } from '@/components/layout/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { WidgetCard } from '@/components/layout/widget-card';
-import { searchBusinesses, saveBusiness, getSearchHistory } from '@/services/lead-discovery/google-places';
+import { getSearchHistory, saveBusiness, searchBusinesses } from '@/services/lead-discovery/google-places';
+import type { BusinessRecord, SearchHistoryItem } from '@/types/lead-discovery';
 
 export default function LeadsPage() {
   const [keyword, setKeyword] = useState('dentist');
@@ -13,19 +14,27 @@ export default function LeadsPage() {
   const [state, setState] = useState('IL');
   const [country, setCountry] = useState('US');
   const [radius, setRadius] = useState(10);
-  const [results, setResults] = useState<any[]>([]);
-  const [history, setHistory] = useState<any[]>([]);
+  const [results, setResults] = useState<BusinessRecord[]>([]);
+  const [history, setHistory] = useState<SearchHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   const search = async () => {
     setLoading(true);
-    const { data, error, history: historyEntry } = await searchBusinesses({ keyword, industry, radius, city, state, country, page: 1, pageSize: 10 });
+
+    const { data, error } = await searchBusinesses({ keyword, industry, radius, city, state, country, page: 1, pageSize: 10 });
+
     if (!error) {
-      const saved = await saveBusiness(data[0]);
-      if (!saved.error) {
-        setResults(data);
+      if (data[0]) {
+        const saved = await saveBusiness(data[0]);
+        if (saved.error) {
+          setLoading(false);
+          return;
+        }
       }
+
+      setResults(data);
     }
+
     const { data: historyData } = await getSearchHistory();
     setHistory(historyData ?? []);
     setLoading(false);

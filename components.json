@@ -18,15 +18,6 @@
         "Sidebar",
         "MainLayout"
       ]
-    },
-    "charts": {
-      "description": "Components for rendering charts using the Recharts library.",
-      "examples": [
-        "LineChart",
-        "BarChart",
-        "PieChart",
-        "AreaChart"
-      ]
     }
   }
 }

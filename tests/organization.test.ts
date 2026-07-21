@@ -1,4 +1,4 @@
-import { canAccess } from '../lib/rbac';
+import { canAccess } from '@/lib/rbac';
 
 describe('RBAC permissions', () => {
   it('allows owners to manage organization settings', () => {

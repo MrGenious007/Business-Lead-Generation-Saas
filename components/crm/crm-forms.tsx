@@ -36,7 +36,7 @@ export function CompanyForm({ onCreated }: { onCreated?: () => void }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const result = await createCompany({ ...form, name: form.name, status: 'new' } as any);
+    const result = await createCompany({ ...form });
     setLoading(false);
     if (!result.error) {
       setForm({ name: '', website: '', industry: '' });
@@ -61,7 +61,7 @@ export function DealForm({ onCreated }: { onCreated?: () => void }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const result = await createDeal({ title: form.title, amount: Number(form.amount || 0), stage: form.stage as any, status: 'new' } as any);
+    const result = await createDeal({ title: form.title, amount: Number(form.amount || 0), stage: form.stage });
     setLoading(false);
     if (!result.error) {
       setForm({ title: '', amount: '', stage: 'lead' });
@@ -93,7 +93,7 @@ export function TaskForm({ onCreated }: { onCreated?: () => void }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const result = await createTask({ title: form.title, due_date: form.due_date || null, priority: form.priority, status: 'todo' } as any);
+    const result = await createTask({ title: form.title, due_date: form.due_date || null, priority: form.priority, status: 'todo' });
     setLoading(false);
     if (!result.error) {
       setForm({ title: '', due_date: '', priority: 'medium' });
@@ -105,7 +105,7 @@ export function TaskForm({ onCreated }: { onCreated?: () => void }) {
     <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
       <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Task title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
       <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
-      <select className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as any })}>
+      <select className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as 'low' | 'medium' | 'high' })}>
         <option value="low">Low</option>
         <option value="medium">Medium</option>
         <option value="high">High</option>
@@ -122,7 +122,7 @@ export function NoteForm({ onCreated }: { onCreated?: () => void }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const result = await createNote({ content: form.content, entity_type: form.entity_type } as any);
+    const result = await createNote({ content: form.content, entity_type: form.entity_type });
     setLoading(false);
     if (!result.error) {
       setForm({ content: '', entity_type: 'lead' });
@@ -133,7 +133,7 @@ export function NoteForm({ onCreated }: { onCreated?: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
       <textarea className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Write a note" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} required />
-      <select className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" value={form.entity_type} onChange={(e) => setForm({ ...form, entity_type: e.target.value as any })}>
+      <select className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" value={form.entity_type} onChange={(e) => setForm({ ...form, entity_type: e.target.value as 'lead' | 'company' | 'deal' | 'contact' })}>
         <option value="lead">Lead</option>
         <option value="company">Company</option>
         <option value="deal">Deal</option>

@@ -1,4 +1,4 @@
-import { searchBusinesses, saveBusiness } from '../services/lead-discovery/google-places';
+import { saveBusiness, searchBusinesses } from '@/services/lead-discovery/google-places';
 
 describe('lead discovery service', () => {
   it('returns a search payload shape', async () => {
