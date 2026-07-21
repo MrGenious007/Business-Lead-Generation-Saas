@@ -1,79 +1,130 @@
-"use client";
+'use client';
 
-import { useState } from 'react';
-import { createLead, createCompany, createDeal, createTask, createNote } from '@/services/crm';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  companyFormSchema,
+  dealFormSchema,
+  leadFormSchema,
+  noteFormSchema,
+  taskFormSchema,
+} from '@/lib/validators/crm';
+import {
+  createCompanyFromForm,
+  createDealFromForm,
+  createLeadFromForm,
+  createNoteFromForm,
+  createTaskFromForm,
+} from '@/services/crm';
+import type {
+  CompanyFormValues,
+  DealFormValues,
+  LeadFormValues,
+  NoteFormValues,
+  TaskFormValues,
+} from '@/types/crm';
 
-export function LeadForm({ onCreated }: { onCreated?: () => void }) {
-  const [form, setForm] = useState({ full_name: '', email: '', company_name: '', notes: '' });
-  const [loading, setLoading] = useState(false);
+interface FormProps {
+  onCreated?: () => void;
+}
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    const result = await createLead({ ...form, status: 'new' });
-    setLoading(false);
+function FormError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="text-xs text-red-400">{message}</p>;
+}
+
+export function LeadForm({ onCreated }: FormProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<LeadFormValues>({
+    resolver: zodResolver(leadFormSchema),
+    defaultValues: { status: 'new' },
+  });
+
+  async function onSubmit(values: LeadFormValues) {
+    const result = await createLeadFromForm(values);
     if (!result.error) {
-      setForm({ full_name: '', email: '', company_name: '', notes: '' });
+      reset();
       onCreated?.();
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Full name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Company" value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
-      <textarea className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-      <button type="submit" className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white" disabled={loading}>{loading ? 'Saving…' : 'Add lead'}</button>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+      <input {...register('full_name')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Full name" />
+      <FormError message={errors.full_name?.message} />
+      <input {...register('email')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Email" />
+      <FormError message={errors.email?.message} />
+      <input {...register('phone')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Phone" />
+      <input {...register('company_name')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Company" />
+      <textarea {...register('notes')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Notes" />
+      <button type="submit" className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white" disabled={isSubmitting}>{isSubmitting ? 'Saving…' : 'Add lead'}</button>
     </form>
   );
 }
 
-export function CompanyForm({ onCreated }: { onCreated?: () => void }) {
-  const [form, setForm] = useState({ name: '', website: '', industry: '' });
-  const [loading, setLoading] = useState(false);
+export function CompanyForm({ onCreated }: FormProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<CompanyFormValues>({
+    resolver: zodResolver(companyFormSchema),
+    defaultValues: { status: 'active' },
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    const result = await createCompany({ ...form });
-    setLoading(false);
+  async function onSubmit(values: CompanyFormValues) {
+    const result = await createCompanyFromForm(values);
     if (!result.error) {
-      setForm({ name: '', website: '', industry: '' });
+      reset();
       onCreated?.();
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Company name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Industry" value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
-      <button type="submit" className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white" disabled={loading}>{loading ? 'Saving…' : 'Add company'}</button>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+      <input {...register('name')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Company name" />
+      <FormError message={errors.name?.message} />
+      <input {...register('website')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Website" />
+      <input {...register('industry')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Industry" />
+      <input {...register('phone')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Phone" />
+      <input {...register('address')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Address" />
+      <textarea {...register('description')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Description" />
+      <button type="submit" className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white" disabled={isSubmitting}>{isSubmitting ? 'Saving…' : 'Add company'}</button>
     </form>
   );
 }
 
-export function DealForm({ onCreated }: { onCreated?: () => void }) {
-  const [form, setForm] = useState({ title: '', amount: '', stage: 'lead' });
-  const [loading, setLoading] = useState(false);
+export function DealForm({ onCreated }: FormProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<DealFormValues>({
+    resolver: zodResolver(dealFormSchema),
+    defaultValues: { stage: 'lead', status: 'open' },
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    const result = await createDeal({ title: form.title, amount: Number(form.amount || 0), stage: form.stage });
-    setLoading(false);
+  async function onSubmit(values: DealFormValues) {
+    const result = await createDealFromForm(values);
     if (!result.error) {
-      setForm({ title: '', amount: '', stage: 'lead' });
+      reset();
       onCreated?.();
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Deal title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Amount" type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-      <select className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" value={form.stage} onChange={(e) => setForm({ ...form, stage: e.target.value })}>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+      <input {...register('title')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Deal title" />
+      <FormError message={errors.title?.message} />
+      <input {...register('amount', { valueAsNumber: true })} type="number" className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Amount" />
+      <FormError message={errors.amount?.message} />
+      <select {...register('stage')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
         <option value="lead">Lead</option>
         <option value="qualified">Qualified</option>
         <option value="proposal">Proposal</option>
@@ -81,65 +132,92 @@ export function DealForm({ onCreated }: { onCreated?: () => void }) {
         <option value="won">Won</option>
         <option value="lost">Lost</option>
       </select>
-      <button type="submit" className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-medium text-white" disabled={loading}>{loading ? 'Saving…' : 'Add deal'}</button>
+      <select {...register('status')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
+        <option value="open">Open</option>
+        <option value="won">Won</option>
+        <option value="lost">Lost</option>
+      </select>
+      <textarea {...register('notes')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Notes" />
+      <button type="submit" className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-medium text-white" disabled={isSubmitting}>{isSubmitting ? 'Saving…' : 'Add deal'}</button>
     </form>
   );
 }
 
-export function TaskForm({ onCreated }: { onCreated?: () => void }) {
-  const [form, setForm] = useState({ title: '', due_date: '', priority: 'medium' as const });
-  const [loading, setLoading] = useState(false);
+export function TaskForm({ onCreated }: FormProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<TaskFormValues>({
+    resolver: zodResolver(taskFormSchema),
+    defaultValues: { priority: 'medium', status: 'todo' },
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    const result = await createTask({ title: form.title, due_date: form.due_date || null, priority: form.priority, status: 'todo' });
-    setLoading(false);
+  async function onSubmit(values: TaskFormValues) {
+    const result = await createTaskFromForm(values);
     if (!result.error) {
-      setForm({ title: '', due_date: '', priority: 'medium' });
+      reset();
       onCreated?.();
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Task title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-      <input className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
-      <select className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as 'low' | 'medium' | 'high' })}>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+      <input {...register('title')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Task title" />
+      <FormError message={errors.title?.message} />
+      <input {...register('due_date')} type="date" className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" />
+      <FormError message={errors.due_date?.message} />
+      <select {...register('priority')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
         <option value="low">Low</option>
         <option value="medium">Medium</option>
         <option value="high">High</option>
       </select>
-      <button type="submit" className="rounded-xl bg-cyan-600 px-4 py-2 text-sm font-medium text-white" disabled={loading}>{loading ? 'Saving…' : 'Add task'}</button>
+      <select {...register('status')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
+        <option value="todo">To do</option>
+        <option value="in_progress">In progress</option>
+        <option value="done">Done</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <textarea {...register('description')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Description" />
+      <button type="submit" className="rounded-xl bg-cyan-600 px-4 py-2 text-sm font-medium text-white" disabled={isSubmitting}>{isSubmitting ? 'Saving…' : 'Add task'}</button>
     </form>
   );
 }
 
-export function NoteForm({ onCreated }: { onCreated?: () => void }) {
-  const [form, setForm] = useState({ content: '', entity_type: 'lead' as const });
-  const [loading, setLoading] = useState(false);
+export function NoteForm({ onCreated }: FormProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<NoteFormValues>({
+    resolver: zodResolver(noteFormSchema),
+    defaultValues: { entity_type: 'lead' },
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    const result = await createNote({ content: form.content, entity_type: form.entity_type });
-    setLoading(false);
+  async function onSubmit(values: NoteFormValues) {
+    const result = await createNoteFromForm(values);
     if (!result.error) {
-      setForm({ content: '', entity_type: 'lead' });
+      reset();
       onCreated?.();
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-      <textarea className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Write a note" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} required />
-      <select className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" value={form.entity_type} onChange={(e) => setForm({ ...form, entity_type: e.target.value as 'lead' | 'company' | 'deal' | 'contact' })}>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+      <textarea {...register('content')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Write a note" />
+      <FormError message={errors.content?.message} />
+      <select {...register('entity_type')} className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
         <option value="lead">Lead</option>
         <option value="company">Company</option>
         <option value="deal">Deal</option>
         <option value="contact">Contact</option>
+        <option value="pipeline">Pipeline</option>
+        <option value="task">Task</option>
       </select>
-      <button type="submit" className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white" disabled={loading}>{loading ? 'Saving…' : 'Add note'}</button>
+      <FormError message={errors.entity_type?.message} />
+      <button type="submit" className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white" disabled={isSubmitting}>{isSubmitting ? 'Saving…' : 'Add note'}</button>
     </form>
   );
 }

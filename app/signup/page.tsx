@@ -8,13 +8,14 @@ import toast from 'react-hot-toast';
 import { AuthCard, SubmitButton } from '@/components/auth/AuthCard';
 import { signupSchema } from '@/lib/validators/auth';
 import { signUpWithPassword } from '@/services/auth';
+import type { SignupFormValues } from '@/types/auth';
 
 export default function SignupPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(signupSchema) });
+  const { register, handleSubmit, formState: { errors } } = useForm<SignupFormValues>({ resolver: zodResolver(signupSchema) });
 
-  const onSubmit = async (values: { fullName: string; organizationName: string; email: string; password: string }) => {
+  const onSubmit = async (values: SignupFormValues) => {
     setIsSubmitting(true);
     const { data, error } = await signUpWithPassword(values);
     setIsSubmitting(false);
@@ -29,8 +30,15 @@ export default function SignupPage() {
       return;
     }
 
+    if (data.session) {
+      toast.success('Account created successfully.');
+      router.refresh();
+      router.replace('/dashboard');
+      return;
+    }
+
     toast.success('Account created. Please check your email to confirm sign in.');
-    router.push('/dashboard');
+    router.replace('/login');
   };
 
   return (

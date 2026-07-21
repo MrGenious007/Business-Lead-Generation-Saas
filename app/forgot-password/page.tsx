@@ -7,12 +7,13 @@ import toast from 'react-hot-toast';
 import { AuthCard, SubmitButton } from '@/components/auth/AuthCard';
 import { forgotPasswordSchema } from '@/lib/validators/auth';
 import { resetPasswordForEmail } from '@/services/auth';
+import type { ForgotPasswordFormValues } from '@/types/auth';
 
 export default function ForgotPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(forgotPasswordSchema) });
+  const { register, handleSubmit, formState: { errors } } = useForm<ForgotPasswordFormValues>({ resolver: zodResolver(forgotPasswordSchema) });
 
-  const onSubmit = async (values: { email: string }) => {
+  const onSubmit = async (values: ForgotPasswordFormValues) => {
     setIsSubmitting(true);
     const { error } = await resetPasswordForEmail(values.email);
     setIsSubmitting(false);

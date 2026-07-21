@@ -6,14 +6,15 @@ import { PageHeader } from '@/components/layout/page-header';
 import { WidgetCard } from '@/components/layout/widget-card';
 import { CompanyForm, DealForm, LeadForm, NoteForm, TaskForm } from '@/components/crm/crm-forms';
 import { getCompanies, getContacts, getDeals, getLeads, getTasks, getActivityTimeline } from '@/services/crm';
+import type { ActivityItem, Company, Contact, Deal, Lead, TaskItem } from '@/types/crm';
 
 export default function CRMPage() {
-  const [leads, setLeads] = useState<any[]>([]);
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [deals, setDeals] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [activity, setActivity] = useState<any[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
   async function load() {

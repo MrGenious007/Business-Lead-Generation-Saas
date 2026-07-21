@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-const protectedRoutes = ['/dashboard', '/crm', '/leads', '/organizations'];
+import { requiresAuthentication } from '@/lib/rbac';
 
 function hasSupabaseSessionCookie(request: NextRequest) {
   return request.cookies
@@ -11,7 +10,7 @@ function hasSupabaseSessionCookie(request: NextRequest) {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isProtectedRoute = protectedRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  const isProtectedRoute = requiresAuthentication(pathname);
 
   if (isProtectedRoute) {
     if (!hasSupabaseSessionCookie(request)) {
@@ -25,5 +24,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/crm/:path*', '/leads/:path*', '/organizations/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map)$).*)'],
 };

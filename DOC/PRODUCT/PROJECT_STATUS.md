@@ -1,99 +1,89 @@
 # LeadPilot AI Project Status
 
-## Audit Summary
+## Current State
 
-This repository contains an early SaaS scaffold with a partially built Next.js app at the repository root and a monorepo skeleton for apps/packages that is not fully connected. The current codebase has working-looking UI scaffolding for authentication, CRM, organization management, and lead discovery, but many core modules are incomplete, broken, or mismatched with the database schema and workspace structure.
+LeadPilot AI now has a stable single-app Next.js foundation with Supabase SSR authentication, multi-tenant organization context, server-side RBAC checks, hardened tenant schema migrations, and default route protection for authenticated application areas.
 
-## Completed
+## Completed Work
 
-- Root Next.js app scaffold with `app` directory and auth-related pages: signup, login, forgot password, reset password.
-- Supabase client wrappers for browser and server usage.
-- Authentication UI components and form validation using `react-hook-form` and `zod`.
-- Dashboard shell layout and reusable UI primitives for page headers and widgets.
-- CRM workspace page skeleton with lead/company/deal/task/note forms and service stubs.
-- Organization management UI skeleton and RBAC helper logic.
-- Initial Supabase migration script and example seed script.
-- A single RBAC unit test covering owner/member permissions.
+- WI-001: Repository cleanup and structure consolidation completed.
+- WI-002: Next.js App Router foundation stabilized with valid route files, middleware, and config.
+- WI-003: Supabase authentication completed for login, signup, forgot password, reset password, logout, session recovery, and session persistence.
+- WI-004: Multi-tenant organization foundation completed with profiles, memberships, settings, active organization persistence, and switching.
+- WI-005: RBAC completed with shared permission definitions, server-side permission guards, and tenant-aware route protection.
+- WI-006: Database foundation completed with migrations for tenant tables, invitations, indexes, audit fields, soft delete, and RLS policies.
+- WI-007: Shared foundation types completed for API results, auth models, user/session models, and organization domain types.
+- WI-008: Shared service consolidation completed for auth, user/profile, organization context, and permission lookups.
+- WI-009: Route protection completed for dashboard, CRM, leads, organizations, nested settings pages, and future authenticated routes through default-protected middleware classification.
+- WI-202: CRM types and validation completed with full TypeScript models, Zod schemas, DTOs, shared constants, form integration, and validation tests.
 
-## Missing / Incomplete
+## Active Application Surface
 
-- `app/api` is blank; no API routes implemented.
-- Logout flow references `/api/auth/logout`, but no logout route exists.
-- `next.config.ts` contains `next-auth` configuration rather than real Next config, and `next-auth` is not installed.
-- Workspace packages under `apps/*`, `packages/*`, `features/*`, and `components/ui` are mostly placeholders or stubs and are not integrated.
-- Many imported modules and types are missing:
-  - `@/hooks/use-organizations` missing.
-  - `@/types/organization`, `@/types/crm`, `@/types/auth`, `@/types/lead` missing.
-  - `@/features/analytics/hooks/useAnalytics` and many imported feature modules do not exist.
-  - `@/components/ui/LoadingSpinner`, `ErrorMessage`, `AnalyticsChart`, and similar UI components do not exist.
-  - `@/services/lead-discovery/google-places` path does not exist.
-  - `services/notifications` references non-existent integration modules.
-- `app/(dashboard)` contains route files without valid `.tsx` extensions and duplicates `app/dashboard` routes.
-- Organization pages use hard-coded organization IDs and fake role logic rather than real org context or membership.
-- Route protection is incomplete: `middleware.ts` only protects `/dashboard`, while `/crm`, `/leads`, `/organizations`, and other workspace pages remain publicly accessible.
-- Authentication and access control are mostly UI-level; there is no real role enforcement or tenant scoping in the backend.
+- Public routes:
+  - `/`
+  - `/login`
+  - `/signup`
+  - `/forgot-password`
+  - `/reset-password`
+- Authenticated routes:
+  - `/dashboard`
+  - `/crm`
+  - `/leads`
+  - `/organizations`
+  - `/organizations/members`
+  - `/organizations/settings`
+- API routes:
+  - `POST /api/auth/logout`
 
-## Technical Debt
+## Implemented Foundations
 
-- `package.json` pins many dependencies to `latest`, making builds non-deterministic.
-- Duplicate dependency entries: `@supabase/supabase-js` and `supabase-js`.
-- Placeholder directories and files create confusion between scoped workspace design and actual root app implementation.
-- Mixed import conventions (`@/` alias vs relative paths) with broken references.
-- Service functions use `any`, `as any`, and direct client-side Supabase operations with no typed domain model.
-- Many stale or mismatched files remain, including `supabase/migrations` not matching code expectations.
+### Authentication
 
-## Architecture Improvements
+- Supabase browser and server clients are implemented in `lib/supabase`.
+- Server auth helpers enforce redirects for protected pages.
+- `AuthSessionSync` handles recovery links and App Router refresh behavior.
+- Logout is implemented server-side via `POST /api/auth/logout`.
 
-- Consolidate the actual app implementation into a single coherent workspace instead of an unconnected `apps/*` / `packages/*` skeleton.
-- Fix Next.js route file naming and route-group usage; ensure pages have valid `.tsx` extensions.
-- Add a proper server-side API layer or Next.js server actions to encapsulate Supabase operations and enforce authorization.
-- Create a centralized tenant/org context and session model rather than spreading organization awareness across page-level state.
-- Remove unused placeholder feature packages until they are implemented.
+### Multi-tenant Organizations
 
-## Security Improvements
+- `profiles` are linked to `auth.users`.
+- Organization access is derived from `organization_members`.
+- `profiles.active_organization_id` persists active tenant context.
+- Organization settings and member management are wired to the active organization context.
 
-- Protect all authenticated workspace routes, not just `/dashboard`.
-- Add a real logout endpoint and session invalidation support.
-- Implement Supabase row-level security (RLS) and ownership checks for `organizations`, CRM tables, and lead discovery data.
-- Remove hard-coded org IDs and permission strings from client UI components.
-- Ensure sensitive backend actions run server-side rather than from browser-only Supabase clients.
-- Add input validation and sanitization on the server side, not only on the client.
+### RBAC and Route Protection
 
-## Performance Improvements
+- Shared permissions are defined in `lib/rbac.ts`.
+- Server-side permission enforcement is implemented in `lib/rbac/server.ts`.
+- Middleware protects all non-public application routes by default.
+- Unauthorized users are redirected to `/login` with a `redirectTo` query param.
+- Authenticated users without tenant permission are redirected to `/organizations` from protected organization subroutes.
 
-- Adopt React Query / TanStack Query for caching, stale data management, and deduplication.
-- Avoid loading entire datasets in a single request; add pagination/filtering for CRM and discovery lists.
-- Optimize Supabase selects with explicit column projections and scoped queries.
-- Replace repeated `useEffect` manual loading with reusable data hooks and query caching.
+### Services and Types
 
-## Database Improvements
+- Shared services now centralize auth, user/profile, organization, and permission logic.
+- Shared result and domain types remove ad hoc response shapes and broad `any` usage from the foundation layer.
 
-- Align database migrations with application code: add `organizations`, `profiles`, `organization_members`, `organization_settings`, `crm_*`, `businesses`, `notifications`, and other referenced tables.
-- Add audit fields and tenant scoped foreign keys.
-- Correct seed data to match actual schema and remove invalid business seed for non-existent tables.
-- Define a clear schema for auth profiles vs Supabase auth users.
-- Add migration-driven schema versioning instead of a single aggregated SQL file.
+## Remaining Gaps
 
-## Recommended Refactoring
-
-- Repair or create missing `types/*` modules for organization, auth, CRM, and lead discovery models.
-- Build a single complete foundation module before expanding to the next module, starting with authentication + organization + role/permission scaffolding.
-- Replace one-off service stubs with typed CRUD services and server actions that return consistent result shapes.
-- Implement shared UI primitives and remove duplicate form/card styling.
-- Consolidate the `app/(dashboard)` route-group placeholders and root `app` pages into a consistent route structure.
+- Build and test validation still depend on local terminal reliability; editor diagnostics are currently clean, but full command execution must remain part of release validation.
+- CRM types, validation, and forms are now aligned with the database schema; detail pages, search/filter, pipelines, and activity logging remain to be implemented.
+- Lead discovery remains a functional foundation rather than a production-complete workflow.
+- API coverage is intentionally thin; most behavior is still expressed through typed service modules rather than a broad route layer.
+- Invitation acceptance, email delivery, and richer tenant administration flows remain incomplete.
 
 ## Feature Progress
 
-- Authentication: ~40%
-- Organization support: ~25%
-- Roles & permissions: ~20%
-- CRM foundation: ~35%
-- Lead discovery: ~15%
-- Analytics / reporting: ~10%
-- Monorepo/package structure: ~20%
+- Authentication: 95%
+- Organization support: 90%
+- Roles and permissions: 90%
+- Route protection: 95%
+- CRM foundation: 75%
+- Lead discovery: 50%
+- Documentation and architecture alignment: 80%
 
 ## Overall Completion
 
-- Estimated overall completion: ~25%
+- Estimated overall completion: 75%
 
-The current codebase is a promising starting scaffold, but it requires focused foundation work to make the app compile, enforce security, align the database schema, and connect the workspace architecture.
+The current codebase is build-oriented and internally consistent across auth, multi-tenancy, RBAC, and route protection. Remaining work is primarily product expansion, broader API coverage, and end-to-end validation in a reliable local runtime.

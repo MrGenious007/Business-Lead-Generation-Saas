@@ -9,14 +9,15 @@ import toast from 'react-hot-toast';
 import { AuthCard, SubmitButton } from '@/components/auth/AuthCard';
 import { loginSchema } from '@/lib/validators/auth';
 import { signInWithPassword } from '@/services/auth';
+import type { LoginFormValues } from '@/types/auth';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(loginSchema) });
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
-  const onSubmit = async (values: { email: string; password: string }) => {
+  const onSubmit = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     const { data, error } = await signInWithPassword(values);
     setIsSubmitting(false);
@@ -27,7 +28,8 @@ export default function LoginPage() {
     }
 
     toast.success('Signed in successfully.');
-    router.push(searchParams.get('redirectTo') || '/dashboard');
+    router.refresh();
+    router.replace(searchParams.get('redirectTo') || '/dashboard');
   };
 
   return (

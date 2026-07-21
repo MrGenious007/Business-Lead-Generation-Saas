@@ -2,19 +2,45 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { AuthCard, SubmitButton } from '@/components/auth/AuthCard';
+import { useAuth } from '@/hooks/use-auth';
 import { resetPasswordSchema } from '@/lib/validators/auth';
-import { updatePassword } from '@/services/auth';
+import { recoverSessionFromUrl, updatePassword } from '@/services/auth';
+import type { ResetPasswordFormValues } from '@/types/auth';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(resetPasswordSchema) });
+  const [isRecoveringSession, setIsRecoveringSession] = useState(true);
+  const [canResetPassword, setCanResetPassword] = useState(false);
+  const { register, handleSubmit, formState: { errors } } = useForm<ResetPasswordFormValues>({ resolver: zodResolver(resetPasswordSchema) });
 
-  const onSubmit = async (values: { password: string; confirmPassword: string }) => {
+  useEffect(() => {
+    const syncRecovery = async () => {
+      await recoverSessionFromUrl();
+      setIsRecoveringSession(false);
+    };
+
+    syncRecovery();
+  }, []);
+
+  useEffect(() => {
+    if (!loading && !isRecoveringSession) {
+      setCanResetPassword(Boolean(user));
+    }
+  }, [isRecoveringSession, loading, user]);
+
+  const onSubmit = async (values: ResetPasswordFormValues) => {
+    if (!canResetPassword) {
+      toast.error('Your reset link is invalid or has expired. Please request a new one.');
+      return;
+    }
+
     setIsSubmitting(true);
     const { error } = await updatePassword(values.password);
     setIsSubmitting(false);
@@ -25,8 +51,42 @@ export default function ResetPasswordPage() {
     }
 
     toast.success('Password updated successfully.');
-    router.push('/dashboard');
+    router.refresh();
+    router.replace('/dashboard');
   };
+
+  if (loading || isRecoveringSession) {
+    return (
+      <AuthCard
+        title="Verifying reset session"
+        subtitle="Please wait while we verify your password recovery link."
+        footerText="Back to sign in"
+        footerHref="/login"
+        footerLinkText="Return to login"
+      >
+        <p className="text-sm text-slate-300">We are validating your secure reset session before showing the password form.</p>
+      </AuthCard>
+    );
+  }
+
+  if (!canResetPassword) {
+    return (
+      <AuthCard
+        title="Reset link required"
+        subtitle="This password reset session is no longer active. Request a fresh reset email to continue."
+        footerText="Back to sign in"
+        footerHref="/login"
+        footerLinkText="Return to login"
+      >
+        <div className="space-y-4 text-sm text-slate-300">
+          <p>The reset link may have expired, already been used, or is missing the recovery session.</p>
+          <Link href="/forgot-password" className="inline-flex rounded-full bg-cyan-500 px-5 py-3 font-medium text-slate-950 transition hover:bg-cyan-400">
+            Request another reset link
+          </Link>
+        </div>
+      </AuthCard>
+    );
+  }
 
   return (
     <AuthCard

@@ -2,262 +2,138 @@
 
 ## Overview
 
-This document describes the current API service design and the planned API contract for LeadPilot AI. The repository today contains service-level operations rather than a fully implemented `/api` route layer.
+LeadPilot AI currently exposes a small route-layer API and a larger typed service layer. The production foundation relies on shared services for auth, user/profile, organization context, permissions, CRM access, and lead discovery integration.
 
-Existing service modules reference these domain operations:
-- `services/auth.ts`
-- `services/organization.ts`
-- `services/crm.ts`
-- `services/lead-discovery` (planned)
-- `services/notifications` (logging/dispatch)
+## Route-layer API
 
-The API spec below combines the current service surface with the intended backend endpoints for a production-ready app.
+### Authentication
 
-## Authentication
-
-### Sign in
+#### Logout
 
 - Method: `POST`
-- Path: `/api/auth/signin`
-- Request:
-  - `email` (string)
-  - `password` (string)
-- Response:
-  - `user` object
-  - `session` metadata
-  - `error` string|null
-- Current implementation: `signInWithPassword(payload)` in `services/auth.ts`
-
-### Sign up
-
-- Method: `POST`
-- Path: `/api/auth/signup`
-- Request:
-  - `fullName` (string)
-  - `organizationName` (string)
-  - `email` (string)
-  - `password` (string)
-- Response:
-  - `user` object
-  - `organization` object
-  - `error` string|null
-- Current implementation: `signUpWithPassword(payload)` in `services/auth.ts`
-- Side effects: create an organization record and upsert a `profiles` row.
-
-### Password reset request
-
-- Method: `POST`
-- Path: `/api/auth/password-reset`
-- Request:
-  - `email` (string)
-- Response:
-  - `success` boolean
-  - `error` string|null
-- Current implementation: `resetPasswordForEmail(email)` in `services/auth.ts`
-
-### Password update
-
-- Method: `POST`
-- Path: `/api/auth/password-update`
-- Request:
-  - `password` (string)
-  - `token` (string) optional depending on flow
-- Response:
-  - `success` boolean
-  - `error` string|null
-- Current implementation: `updatePassword(password)` in `services/auth.ts`
-
-### Logout
-
-- Method: `GET` or `POST`
 - Path: `/api/auth/logout`
-- Response:
-  - `success` boolean
-  - `error` string|null
-- Current implementation: page/UI references this endpoint, but the route is not yet implemented.
+- Behavior:
+  - invalidates the current Supabase session on the server
+  - redirects to `/login` with HTTP 303
+- Implementation: `app/api/auth/logout/route.ts`
 
-## Organization API
+## Authentication Service Surface
 
-### List organizations
+Implemented in `services/auth.ts` and related helpers.
 
-- Method: `GET`
-- Path: `/api/organizations`
-- Response:
-  - `organizations` array
-  - `error` string|null
-- Current implementation: `getOrganizations()` in `services/organization.ts`
+- `signInWithPassword(payload)`
+  - signs in an existing user
+  - returns typed auth/session result data
+- `signUpWithPassword(payload)`
+  - creates the auth user
+  - bootstraps tenant foundation for the user flow
+- `resetPasswordForEmail(email)`
+  - sends a password recovery email
+- `updatePassword(password)`
+  - updates the active authenticated user's password
+- `recoverSessionFromUrl()`
+  - recovers a session from recovery or email confirmation callback data
+- `signOut()`
+  - signs the current browser session out
+- `getCurrentSession()`
+  - returns current session data
+- `getAuthenticatedUser(client?)`
+  - resolves the current typed auth user from a Supabase client
 
-### Get organization by ID
+## User and Permission Service Surface
 
-- Method: `GET`
-- Path: `/api/organizations/{organizationId}`
-- Response:
-  - `organization` object
-  - `error` string|null
-- Current implementation: `getOrganizationById(id)` in `services/organization.ts`
+### `services/user.ts`
 
-### Create organization
+- `getAuthenticatedUser(client?)`
+- `getCurrentSession(client?)`
+- `ensureCurrentProfile(client, user)`
+- `getProfileById(client, profileId)`
+- `updateActiveOrganization(client, profileId, organizationId)`
 
-- Method: `POST`
-- Path: `/api/organizations`
-- Request:
-  - `name`, `slug`, `industry`, `website`, `phone`, `address`, `description`
-- Response:
-  - `organization` object
-  - `error` string|null
-- Current implementation: `createOrganization(payload)` in `services/organization.ts`
+### `services/permission.ts`
 
-### Update organization
+- `listOrganizationMemberships(client, profileId)`
+- `getActiveMembership(profile, memberships)`
+- `getAccessContext(profile, memberships)`
+- `hasPermission(role, permission)`
 
-- Method: `PATCH`
-- Path: `/api/organizations/{organizationId}`
-- Request:
-  - Partial organization fields
-- Response:
-  - `organization` object
-  - `error` string|null
-- Current implementation: `updateOrganization(id, payload)` in `services/organization.ts`
+## Organization Service Surface
 
-### Delete organization
+Implemented in `services/organization.ts`.
 
-- Method: `DELETE`
-- Path: `/api/organizations/{organizationId}`
-- Response:
-  - `success` boolean
-  - `error` string|null
-- Current implementation: `deleteOrganization(id)` in `services/organization.ts`
+- `getOrganizationContext()`
+- `getOrganizations()`
+- `getOrganizationById(id)`
+- `createOrganization(payload)`
+- `updateOrganization(id, payload)`
+- `deleteOrganization(id)`
+- `getOrganizationSettings(organizationId)`
+- `upsertOrganizationSettings(organizationId, payload)`
+- `getOrganizationMembers(organizationId)`
+- `inviteOrganizationMember(organizationId, email, role)`
+- `updateOrganizationMember(id, role)`
+- `deleteOrganizationMember(id)`
+- `switchActiveOrganization(organizationId)`
 
-### Organization settings
+## CRM Service Surface
 
-- Method: `GET`
-- Path: `/api/organizations/{organizationId}/settings`
-- Response:
-  - `settings` object
-  - `error` string|null
-- Current implementation: `getOrganizationSettings(organizationId)` in `services/organization.ts`
+Implemented in `services/crm.ts`.
 
-- Method: `POST`
-- Path: `/api/organizations/{organizationId}/settings`
-- Request:
-  - `timezone`, `currency`, `notificationEmail`, `allowInvites`, `autoAssignLeads`, `defaultLanguage`
-- Response:
-  - `settings` object
-  - `error` string|null
-- Current implementation: `upsertOrganizationSettings(organizationId, payload)` in `services/organization.ts`
+- `getLeads()`
+- `createLead(payload)`
+- `updateLead(id, payload)`
+- `getCompanies()`
+- `createCompany(payload)`
+- `getContacts()`
+- `getDeals()`
+- `createDeal(payload)`
+- `getPipelines()`
+- `getTasks()`
+- `createTask(payload)`
+- `createNote(payload)`
+- `getActivityTimeline()`
 
-### Organization members and invitations
+## Lead Discovery Service Surface
 
-- Method: `GET`
-- Path: `/api/organizations/{organizationId}/members`
-- Response:
-  - `members` array
-  - `error` string|null
-- Current implementation: `getOrganizationMembers(organizationId)` in `services/organization.ts`
+Implemented in `services/lead-discovery/google-places.ts`.
 
-- Method: `POST`
-- Path: `/api/organizations/{organizationId}/members/invite`
-- Request:
-  - `email` (string)
-  - `role` (string)
-- Response:
-  - `invitation` object
-  - `error` string|null
-- Current implementation: `inviteOrganizationMember(organizationId, email, role)` in `services/organization.ts`
+- `searchBusinesses(payload)`
+- `saveBusiness(payload)`
+- `getSearchHistory()`
 
-- Method: `PATCH`
-- Path: `/api/organizations/members/{memberId}`
-- Request:
-  - `role` (string)
-- Response:
-  - `member` object
-  - `error` string|null
-- Current implementation: `updateOrganizationMember(id, role)` in `services/organization.ts`
+## Route Protection Contract
 
-- Method: `DELETE`
-- Path: `/api/organizations/members/{memberId}`
-- Response:
-  - `success` boolean
-  - `error` string|null
-- Current implementation: `deleteOrganizationMember(id)` in `services/organization.ts`
+### Public routes
 
-## CRM API
+- `/`
+- `/login`
+- `/signup`
+- `/forgot-password`
+- `/reset-password`
 
-### Leads
+### Authenticated routes
 
-- `GET /api/crm/leads`
-  - Returns list of leads.
-  - Current implementation: `getLeads()` in `services/crm.ts`
+All non-public app routes require authentication by default via middleware classification.
 
-- `POST /api/crm/leads`
-  - Creates a lead.
-  - Request payload: lead fields.
-  - Current implementation: `createLead(payload)` in `services/crm.ts`
+Current authenticated areas include:
 
-- `PATCH /api/crm/leads/{leadId}`
-  - Updates a lead.
-  - Current implementation: `updateLead(id, payload)` in `services/crm.ts`
+- `/dashboard`
+- `/crm`
+- `/leads`
+- `/organizations`
+- nested organization settings and members routes
+- future application routes unless explicitly marked public
 
-### Companies
+### Redirect behavior
 
-- `GET /api/crm/companies`
-  - Returns list of companies.
-  - Current implementation: `getCompanies()` in `services/crm.ts`
+- unauthenticated access to authenticated routes redirects to `/login?redirectTo=<pathname>`
+- authenticated users visiting auth entry pages are redirected to `/dashboard`
+- authenticated users without required tenant permission are redirected to `/organizations`
 
-- `POST /api/crm/companies`
-  - Creates a company.
-  - Current implementation: `createCompany(payload)` in `services/crm.ts`
+## Notes
 
-### Contacts
-
-- `GET /api/crm/contacts`
-  - Returns list of contacts.
-  - Current implementation: `getContacts()` in `services/crm.ts`
-
-### Deals
-
-- `GET /api/crm/deals`
-  - Returns list of deals.
-  - Current implementation: `getDeals()` in `services/crm.ts`
-
-- `POST /api/crm/deals`
-  - Creates a deal.
-  - Current implementation: `createDeal(payload)` in `services/crm.ts`
-
-### Pipelines
-
-- `GET /api/crm/pipelines`
-  - Returns list of pipeline definitions.
-  - Current implementation: `getPipelines()` in `services/crm.ts`
-
-### Tasks
-
-- `GET /api/crm/tasks`
-  - Returns tasks.
-  - Current implementation: `getTasks()` in `services/crm.ts`
-
-- `POST /api/crm/tasks`
-  - Creates a task.
-  - Current implementation: `createTask(payload)` in `services/crm.ts`
-
-### Notes
-
-- `POST /api/crm/notes`
-  - Creates a note.
-  - Current implementation: `createNote(payload)` in `services/crm.ts`
-
-### Activity
-
-- `GET /api/crm/activity`
-  - Returns activity timeline entries.
-  - Current implementation: `getActivityTimeline()` in `services/crm.ts`
-
-## Lead Discovery API
-
-The application references a lead discovery workflow and Google Places integration, but the actual API surface is not yet implemented.
-
-### Search businesses
-
-- Method: `POST`
+- No new route-layer API endpoints were introduced in WI-009.
+- This document was updated because the repository now has a real logout route and a defined route-protection contract, which the earlier version did not describe accurately.
 - Path: `/api/lead-discovery/search`
 - Request:
   - `keyword`, `industry`, `city`, `state`, `country`, `radius`, `page`, `pageSize`
