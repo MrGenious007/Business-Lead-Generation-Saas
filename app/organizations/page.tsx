@@ -8,7 +8,7 @@ import { canAccess } from '@/lib/rbac';
 import type { Organization } from '@/types/organization';
 
 export default function OrganizationsPage() {
-  const { organizations, loading } = useOrganizations();
+  const { organizations, loading, error } = useOrganizations();
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
 
   useEffect(() => {
@@ -19,6 +19,10 @@ export default function OrganizationsPage() {
 
   if (loading) {
     return <div className="min-h-screen bg-slate-950 p-10 text-white">Loading organizations…</div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen bg-slate-950 p-10 text-white">Failed to load organizations: {error}</div>;
   }
 
   return (

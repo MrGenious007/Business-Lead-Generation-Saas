@@ -1,12 +1,11 @@
 import { ActivityList } from '@/components/layout/activity-list';
 import { CalendarCard } from '@/components/layout/calendar-card';
 import { ChartCard } from '@/components/layout/chart-card';
-import { DashboardShell } from '@/components/layout/dashboard-shell';
 import { KpiCard } from '@/components/layout/kpi-card';
 import { PageHeader } from '@/components/layout/page-header';
 import { TasksPanel } from '@/components/layout/tasks-panel';
 import { WidgetCard } from '@/components/layout/widget-card';
-import React from 'react';
+import { DashboardShell } from '@/components/layout/dashboard-shell';
 
 export default function DashboardPage() {
   return (
