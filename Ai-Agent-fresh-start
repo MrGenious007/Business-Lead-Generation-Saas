@@ -1,0 +1,32 @@
+Read instruction.md from the project root and follow it for the entire conversation.
+
+Understand:
+- Coding standards
+- Architecture
+- Folder structure
+- Tech stack
+- Naming conventions
+- Rules for generating code
+
+Do not start coding yet.
+
+After reading it, summarize your understanding and ask if you have any questions before making changes.
+
+
+======================================================================
+Read these files:
+
+instruction.md
+README.md
+PROJECT_STATUS.md
+ROADMAP.md
+
+Summarize:
+
+- Current implementation status
+- Completed features
+- Pending features
+- Technical debt
+- Suggested next sprint
+
+Do not modify any code yet.
