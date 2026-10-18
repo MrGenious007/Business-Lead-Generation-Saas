@@ -1,14 +1,38 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
+
+const appWorkspacePrefixes = [
+  '/dashboard',
+  '/leads',
+  '/crm',
+  '/intelligence',
+  '/analytics',
+  '/developers',
+  '/organizations',
+];
 
 const navItems = [
   { href: '/', label: 'Overview' },
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/leads', label: 'Leads' },
   { href: '/crm', label: 'CRM' },
+  { href: '/intelligence', label: 'Intelligence & AI' },
+  { href: '/analytics', label: 'Analytics' },
+  { href: '/developers', label: 'Developers & API' },
   { href: '/organizations', label: 'Organizations' },
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
+
+  // If we are inside an app workspace, DashboardShell provides the workspace header
+  if (appWorkspacePrefixes.some((prefix) => pathname?.startsWith(prefix))) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6">
@@ -26,7 +50,7 @@ export function Navbar() {
           {navItems.map((item) => (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href as any}
               className="rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-white"
             >
               {item.label}
